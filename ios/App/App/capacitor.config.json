@@ -1,0 +1,8 @@
+{
+	"appId": "com.VinylVault.app",
+	"appName": "vinylvault",
+	"webDir": "dist",
+	"packageClassList": [
+		"HapticsPlugin"
+	]
+}
