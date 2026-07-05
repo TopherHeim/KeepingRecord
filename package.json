@@ -17,12 +17,14 @@
     "@dicebear/notionists": "^9.3.2",
     "@google/genai": "^1.46.0",
     "@supabase/supabase-js": "^2.88.0",
+    "@tailwindcss/vite": "^4.3.2",
     "html5-qrcode": "^2.3.8",
     "lucide-react": "^0.561.0",
     "node-fetch": "^2.7.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
-    "recharts": "^3.6.0"
+    "recharts": "^3.6.0",
+    "tailwindcss": "^4.3.2"
   },
   "devDependencies": {
     "@netlify/functions": "^5.1.5",

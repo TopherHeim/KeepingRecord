@@ -11,9 +11,10 @@ dist/
 # Netlify local state
 .netlify/
 
-# IDE / editor
+# IDE / editor / local tooling
 .idea/
 .vscode/
+.claude/
 
 # OS
 .DS_Store
