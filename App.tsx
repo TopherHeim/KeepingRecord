@@ -25,6 +25,7 @@ export const App: React.FC = () => {
     const [activeTab, setActiveTab] = useState<Tab>(Tab.TILES);
     const [records, setRecords] = useState<Album[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingRecord, setEditingRecord] = useState<Album | null>(null);
     const [playingRecord, setPlayingRecord] = useState<Album | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -228,6 +229,44 @@ export const App: React.FC = () => {
             };
             setRecords(prev => [savedRecord, ...prev]);
             toast.success(`"${savedRecord.title}" added to your vault!`);
+        }
+    };
+
+    // 4b. UPDATE EXISTING RECORD
+    const handleUpdateRecord = async (id: string, input: NewAlbumInput) => {
+        const payload = {
+            title: input.title,
+            artist: input.artist,
+            genre: input.genre,
+            year: isNaN(parseInt(input.year)) ? "Unknown" : input.year.toString(),
+            spine_color: input.spineColor,
+            status: input.status,
+            cover_url: input.coverUrl || null,
+        };
+
+        const { error } = await supabase
+            .from('albums')
+            .update(payload)
+            .eq('id', id);
+
+        if (error) {
+            toast.error("Failed to update record: " + error.message);
+        } else {
+            setRecords(prev => prev.map(r =>
+                r.id === id
+                    ? {
+                        ...r,
+                        title: input.title,
+                        artist: input.artist,
+                        genre: input.genre,
+                        year: payload.year as any,
+                        spineColor: input.spineColor,
+                        status: input.status,
+                        coverUrl: input.coverUrl || null,
+                    }
+                    : r
+            ));
+            toast.success(`"${input.title}" updated!`);
         }
     };
 
@@ -510,6 +549,7 @@ export const App: React.FC = () => {
                                     onAddClick={() => setIsModalOpen(true)}
                                     onDelete={handleDeleteRecord}
                                     onRecordClick={setPlayingRecord}
+                                    onEdit={setEditingRecord}
                                     onScanClick={() => setIsScannerOpen(true)}
                                     title={
                                         viewingUserId && viewingUserId !== userId
@@ -546,6 +586,7 @@ export const App: React.FC = () => {
                                     onAddClick={() => setIsModalOpen(true)}
                                     onDelete={handleDeleteRecord}
                                     onRecordClick={setPlayingRecord}
+                                    onEdit={setEditingRecord}
                                     onMoveToCollection={handleMoveToCollection}
                                     title={
                                         viewingUserId && viewingUserId !== userId
@@ -576,9 +617,11 @@ export const App: React.FC = () => {
             </main>
 
             <AddRecordModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
+                isOpen={isModalOpen || !!editingRecord}
+                onClose={() => { setIsModalOpen(false); setEditingRecord(null); }}
                 onSave={handleAddRecord}
+                editingRecord={editingRecord}
+                onUpdate={handleUpdateRecord}
                 defaultStatus={activeTab === Tab.WISHLIST ? 'wishlist' : 'collection'}
             />
 

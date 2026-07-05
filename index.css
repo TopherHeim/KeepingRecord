@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+body {
+    font-family: 'Space Grotesk', sans-serif;
+    background-color: #d6cbb8; /* Vintage paper/cardboard color */
+    min-height: 101vh;
+}
+
+/* Custom scrollbar for a cleaner look */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #baae9b;
+}
+::-webkit-scrollbar-thumb {
+    background: #785c42;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #5c4532;
+}
+
+@keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+.animate-spin-slow {
+    animation: spin-slow 6s linear infinite;
+}

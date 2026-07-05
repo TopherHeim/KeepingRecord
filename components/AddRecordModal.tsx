@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { NewAlbumInput } from '../types';
+import { Album, NewAlbumInput } from '../types';
 import { X, Loader2, Save, Disc, Heart } from 'lucide-react';
 import { getDominantColor } from '../services/dominantColor';
 import { API_BASE } from '../services/apiBase';
@@ -9,6 +9,8 @@ interface AddRecordModalProps {
     onClose: () => void;
     onSave: (album: NewAlbumInput) => void;
     defaultStatus?: 'collection' | 'wishlist';
+    editingRecord?: Album | null;
+    onUpdate?: (id: string, album: NewAlbumInput) => void;
 }
 
 const fetchDiscogsMetadata = async (
@@ -55,7 +57,7 @@ const fetchDiscogsMetadata = async (
     }
 };
 
-const AddRecordModal: React.FC<AddRecordModalProps> = ({ isOpen, onClose, onSave, defaultStatus = 'collection' }) => {
+const AddRecordModal: React.FC<AddRecordModalProps> = ({ isOpen, onClose, onSave, defaultStatus = 'collection', editingRecord = null, onUpdate }) => {
     const [formData, setFormData] = useState<NewAlbumInput>({
         title: '',
         artist: '',
@@ -71,14 +73,35 @@ const AddRecordModal: React.FC<AddRecordModalProps> = ({ isOpen, onClose, onSave
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => {
-        if (isOpen) {
-            setFormData(prev => ({ ...prev, status: defaultStatus }));
+        if (!isOpen) return;
+        if (editingRecord) {
+            setFormData({
+                title: editingRecord.title,
+                artist: editingRecord.artist,
+                genre: editingRecord.genre || '',
+                year: editingRecord.year ? String(editingRecord.year) : '',
+                spineColor: editingRecord.spineColor || '#222222',
+                status: editingRecord.status === 'wishlist' ? 'wishlist' : 'collection',
+                coverUrl: editingRecord.coverUrl || '',
+            });
+        } else {
+            setFormData({
+                title: '',
+                artist: '',
+                genre: '',
+                year: '',
+                spineColor: '#222222',
+                status: defaultStatus,
+                coverUrl: '',
+            });
         }
-    }, [isOpen, defaultStatus]);
+    }, [isOpen, editingRecord, defaultStatus]);
 
     useEffect(() => {
+        // Don't auto-canonicalize while editing — the user is deliberately
+        // correcting fields, and a Discogs lookup would overwrite their input
+        if (editingRecord) return;
         if (!formData.artist.trim() || !formData.title.trim()) return;
-        if (debounceRef.current) clearTimeout(debounceRef.current);
 
         if (debounceRef.current) clearTimeout(debounceRef.current);
         debounceRef.current = setTimeout(async () => {
@@ -101,13 +124,42 @@ const AddRecordModal: React.FC<AddRecordModalProps> = ({ isOpen, onClose, onSave
         return () => {
             if (debounceRef.current) clearTimeout(debounceRef.current);
         };
-    }, [formData.artist, formData.title]);
+    }, [formData.artist, formData.title, editingRecord]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
 
         let finalData = { ...formData };
+
+        if (editingRecord && onUpdate) {
+            const identityChanged =
+                finalData.artist.trim().toLowerCase() !== editingRecord.artist.trim().toLowerCase() ||
+                finalData.title.trim().toLowerCase() !== editingRecord.title.trim().toLowerCase();
+
+            // If it's now a different album, the old cover art and spine
+            // color are wrong — look everything up fresh
+            if (identityChanged) {
+                const result = await fetchDiscogsMetadata(finalData.artist.trim(), finalData.title.trim());
+                finalData = {
+                    ...finalData,
+                    artist: result?.artist || finalData.artist,
+                    title: result?.title || finalData.title,
+                    year: finalData.year || result?.year || '',
+                    genre: finalData.genre || result?.genre || '',
+                    coverUrl: result?.coverUrl || '',
+                };
+                finalData.spineColor = finalData.coverUrl
+                    ? await getDominantColor(finalData.coverUrl)
+                    : '#222222';
+            }
+
+            onUpdate(editingRecord.id, finalData);
+
+            setIsLoading(false);
+            onClose();
+            return;
+        }
 
         if (!finalData.year || !finalData.genre || !finalData.coverUrl) {
             const result = await fetchDiscogsMetadata(finalData.artist, finalData.title);
@@ -150,7 +202,7 @@ const AddRecordModal: React.FC<AddRecordModalProps> = ({ isOpen, onClose, onSave
 
                 {/* Header */}
                 <div className="bg-[#5e3f28] text-[#FDF6E3] px-6 py-4 flex justify-between items-center">
-                    <h2 className="text-xl font-bold tracking-wide">Add New Record</h2>
+                    <h2 className="text-xl font-bold tracking-wide">{editingRecord ? 'Edit Record' : 'Add New Record'}</h2>
                     <button onClick={onClose} className="hover:text-[#D2691E] transition-colors">
                         <X size={24} />
                     </button>
@@ -274,7 +326,9 @@ const AddRecordModal: React.FC<AddRecordModalProps> = ({ isOpen, onClose, onSave
                             className="px-6 py-2 bg-[#D2691E] text-white rounded-lg font-bold hover:bg-[#A0522D] shadow-md flex items-center gap-2 disabled:opacity-50 text-sm"
                         >
                             {isLoading ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
-                            {formData.status === 'collection' ? 'Add to Vault' : 'Add to Wishlist'}
+                            {editingRecord
+                                ? 'Save Changes'
+                                : formData.status === 'collection' ? 'Add to Vault' : 'Add to Wishlist'}
                         </button>
                     </div>
                 </form>

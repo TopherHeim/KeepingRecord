@@ -6,6 +6,7 @@ import {
     Trash2,
     FolderInput,
     Barcode,
+    Pencil,
 } from 'lucide-react';
 
 interface TileViewProps {
@@ -20,6 +21,7 @@ interface TileViewProps {
     userId: string | null;
     viewingUserId: string | null;
     onMoveToCollection?: (album: Album) => void;
+    onEdit?: (album: Album) => void;
     beforeGridContent?: React.ReactNode;
     afterGridContent?: React.ReactNode;
 }
@@ -32,6 +34,7 @@ interface RecordCardProps {
     onRecordClick: (album: Album) => void;
     onDelete: (id: string) => void;
     onMoveToCollection?: (album: Album) => void;
+    onEdit?: (album: Album) => void;
 }
 
 const RecordCard: React.FC<RecordCardProps> = ({
@@ -40,6 +43,7 @@ const RecordCard: React.FC<RecordCardProps> = ({
                                                    onRecordClick,
                                                    onDelete,
                                                    onMoveToCollection,
+                                                   onEdit,
                                                }) => {
     const [imgError, setImgError] = useState(false);
     const hasCover = !!record.coverUrl && !imgError;
@@ -86,6 +90,16 @@ const RecordCard: React.FC<RecordCardProps> = ({
                             <FolderInput size={12} />
                         </button>
                     )}
+                    {onEdit && (
+                        <button
+                            type="button"
+                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onEdit(record); }}
+                            className="p-1.5 rounded-full bg-black/50 border border-white/20 text-white hover:bg-[#8B5E3C] hover:border-[#8B5E3C] transition-colors"
+                            title="Edit Record"
+                        >
+                            <Pencil size={12} />
+                        </button>
+                    )}
                     <button
                         type="button"
                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(record.id); }}
@@ -130,6 +144,7 @@ const TileView: React.FC<TileViewProps> = ({
                                                onDelete,
                                                onRecordClick,
                                                onMoveToCollection,
+                                               onEdit,
                                                beforeGridContent,
                                                afterGridContent,
                                                title,
@@ -213,6 +228,7 @@ const TileView: React.FC<TileViewProps> = ({
                             onRecordClick={onRecordClick}
                             onDelete={onDelete}
                             onMoveToCollection={onMoveToCollection}
+                            onEdit={onEdit}
                         />
                     ))}
                 </div>
