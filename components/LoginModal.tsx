@@ -81,7 +81,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ onClose, onLogin }) => {
 
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-            <div className="bg-[#FDF6E3] p-6 rounded-lg shadow-lg w-80 border-2 border-[#5e3f28]">
+            <div className="bg-[#FDF6E3] bg-clip-padding p-6 rounded-lg shadow-lg w-80 border-2 border-[#5e3f28]">
                 <h2 className="text-xl font-bold mb-4 text-[#5e3f28]">
                     {isSignUp ? 'Create Account' : 'Log In'}
                 </h2>

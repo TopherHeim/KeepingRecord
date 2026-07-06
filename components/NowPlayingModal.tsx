@@ -34,7 +34,7 @@ const NowPlayingModal: React.FC<NowPlayingModalProps> = ({ album, onClose }) => 
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-300">
-            <div className="relative w-full max-w-2xl bg-[#fdf6e3] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden border-8 border-[#5e3f28] flex flex-col md:flex-row">
+            <div className="relative w-full max-w-2xl bg-[#fdf6e3] bg-clip-padding rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden border-8 border-[#5e3f28] flex flex-col md:flex-row">
 
                 {/* Close Button */}
                 <button

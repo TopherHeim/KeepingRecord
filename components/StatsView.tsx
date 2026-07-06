@@ -47,21 +47,21 @@ const StatsView: React.FC<StatsViewProps> = ({ records }) => {
       
       {/* Overview Cards */}
       <div className="col-span-1 md:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-        <div className="bg-[#fdf6e3] p-6 rounded-lg border-2 border-[#5e3f28] shadow-md flex items-center justify-between">
+        <div className="bg-[#fdf6e3] bg-clip-padding p-6 rounded-lg border-2 border-[#5e3f28] shadow-md flex items-center justify-between">
            <div>
               <p className="text-[#8B5E3C] text-sm uppercase font-bold tracking-wider">Total Records</p>
               <p className="text-4xl font-bold text-[#5e3f28]">{records.length}</p>
            </div>
            <div className="p-3 bg-[#e3dcd2] rounded-full text-[#5e3f28]"><Disc size={24} /></div>
         </div>
-        <div className="bg-[#fdf6e3] p-6 rounded-lg border-2 border-[#5e3f28] shadow-md flex items-center justify-between">
+        <div className="bg-[#fdf6e3] bg-clip-padding p-6 rounded-lg border-2 border-[#5e3f28] shadow-md flex items-center justify-between">
            <div>
               <p className="text-[#8B5E3C] text-sm uppercase font-bold tracking-wider">Unique Artists</p>
               <p className="text-4xl font-bold text-[#5e3f28]">{new Set(records.map(r => r.artist)).size}</p>
            </div>
            <div className="p-3 bg-[#e3dcd2] rounded-full text-[#5e3f28]"><Mic2 size={24} /></div>
         </div>
-        <div className="bg-[#fdf6e3] p-6 rounded-lg border-2 border-[#5e3f28] shadow-md flex items-center justify-between">
+        <div className="bg-[#fdf6e3] bg-clip-padding p-6 rounded-lg border-2 border-[#5e3f28] shadow-md flex items-center justify-between">
            <div>
               <p className="text-[#8B5E3C] text-sm uppercase font-bold tracking-wider">Top Genre</p>
               <p className="text-2xl font-bold text-[#5e3f28] truncate max-w-[150px]">{genreData[0]?.name || 'N/A'}</p>
@@ -71,7 +71,7 @@ const StatsView: React.FC<StatsViewProps> = ({ records }) => {
       </div>
 
       {/* Genre Distribution Chart */}
-      <div className="bg-[#fdf6e3] p-6 rounded-lg border-2 border-[#5e3f28] shadow-md min-h-[400px]">
+      <div className="bg-[#fdf6e3] bg-clip-padding p-6 rounded-lg border-2 border-[#5e3f28] shadow-md min-h-[400px]">
         <h3 className="text-xl font-bold text-[#5e3f28] mb-6 flex items-center gap-2">
             <Music2 className="text-[#D2691E]" /> Genre Breakdown
         </h3>
@@ -102,7 +102,7 @@ const StatsView: React.FC<StatsViewProps> = ({ records }) => {
       </div>
 
       {/* Eras/Decades Chart */}
-      <div className="bg-[#fdf6e3] p-6 rounded-lg border-2 border-[#5e3f28] shadow-md min-h-[400px]">
+      <div className="bg-[#fdf6e3] bg-clip-padding p-6 rounded-lg border-2 border-[#5e3f28] shadow-md min-h-[400px]">
         <h3 className="text-xl font-bold text-[#5e3f28] mb-6 flex items-center gap-2">
             <Disc className="text-[#D2691E]" /> Collection by Era
         </h3>

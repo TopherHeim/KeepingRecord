@@ -62,7 +62,7 @@ const DiscoveryCrate: React.FC<DiscoveryCrateProps> = ({ ownedAlbums, onAddToWis
           {recs.map((rec, i) => (
             <div 
               key={i} 
-              className="group relative bg-[#e3dcd2] rounded-lg shadow-[4px_4px_0px_0px_rgba(94,63,40,0.8)] border-2 border-[#5e3f28] overflow-hidden transition-all duration-200"
+              className="group relative bg-[#e3dcd2] bg-clip-padding rounded-lg shadow-[4px_4px_0px_0px_rgba(94,63,40,0.8)] border-2 border-[#5e3f28] overflow-hidden transition-all duration-200"
             >
               <div className="flex h-32">
                 <div className="w-1/3 bg-[#d4c5a9] relative flex items-center justify-center border-r-2 border-[#5e3f28] overflow-hidden">

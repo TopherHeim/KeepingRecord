@@ -154,13 +154,13 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onClose }) => {
 
     return (
         <div className="fixed inset-0 bg-black/90 flex flex-col items-center justify-center z-[100] p-4 backdrop-blur-md">
-            <div className="bg-[#fdf6e3] rounded-2xl p-6 w-full max-w-sm shadow-2xl border-2 border-[#5e3f28] relative">
+            <div className="bg-[#fdf6e3] bg-clip-padding rounded-2xl p-6 w-full max-w-sm shadow-2xl border-2 border-[#5e3f28] relative">
                 <h3 className="text-[#5e3f28] font-bold text-center mb-4 uppercase tracking-tighter">
                     Align Barcode in Box
                 </h3>
                 <div
                     id="reader"
-                    className="w-full overflow-hidden rounded-xl border-4 border-[#5e3f28] bg-black shadow-inner"
+                    className="w-full overflow-hidden rounded-xl border-4 border-[#5e3f28] bg-black bg-clip-padding shadow-inner"
                     style={{ height: '240px' }}
                 >
                     <video

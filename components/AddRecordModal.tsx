@@ -198,7 +198,7 @@ const AddRecordModal: React.FC<AddRecordModalProps> = ({ isOpen, onClose, onSave
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-            <div className="bg-[#fdf6e3] rounded-xl shadow-2xl w-full max-w-lg overflow-hidden border-4 border-[#5e3f28]">
+            <div className="bg-[#fdf6e3] bg-clip-padding rounded-xl shadow-2xl w-full max-w-lg overflow-hidden border-4 border-[#5e3f28]">
 
                 {/* Header */}
                 <div className="bg-[#5e3f28] text-[#FDF6E3] px-6 py-4 flex justify-between items-center">
@@ -232,7 +232,7 @@ const AddRecordModal: React.FC<AddRecordModalProps> = ({ isOpen, onClose, onSave
                     <div className="flex gap-4 items-stretch">
 
                         {/* Cover preview — stretches to match input column height */}
-                        <div className="rounded-lg border-2 border-[#5e3f28] bg-[#d4c5a9] flex items-center justify-center flex-shrink-0 overflow-hidden w-[88px] self-stretch">
+                        <div className="rounded-lg border-2 border-[#5e3f28] bg-[#d4c5a9] bg-clip-padding flex items-center justify-center flex-shrink-0 overflow-hidden w-[88px] self-stretch">
                             {formData.coverUrl ? (
                                 <img
                                     src={formData.coverUrl}

@@ -32,7 +32,7 @@ const ExploreView: React.FC<ExploreViewProps> = ({
                 {showYourProfileCard && (
                     <div
                         onClick={() => onSelectUser(userId!)}
-                        className="group relative bg-[#e3dcd2] rounded-lg shadow-[4px_4px_0px_0px_rgba(94,63,40,0.8)]
+                        className="group relative bg-[#e3dcd2] bg-clip-padding rounded-lg shadow-[4px_4px_0px_0px_rgba(94,63,40,0.8)]
                        border-2 border-[#5e3f28] p-4 hover:-translate-y-1 transition-transform cursor-pointer"
                     >
                         <div className="flex items-center gap-3 mb-2">
@@ -54,7 +54,7 @@ const ExploreView: React.FC<ExploreViewProps> = ({
                     <div
                         key={user.id}
                         onClick={() => onSelectUser(user.id)}
-                        className="group relative bg-[#e3dcd2] rounded-lg shadow-[4px_4px_0px_0px_rgba(94,63,40,0.8)]
+                        className="group relative bg-[#e3dcd2] bg-clip-padding rounded-lg shadow-[4px_4px_0px_0px_rgba(94,63,40,0.8)]
                        border-2 border-[#5e3f28] p-4 hover:-translate-y-1 transition-transform cursor-pointer"
                     >
                         <div className="flex items-center gap-3 mb-2">
