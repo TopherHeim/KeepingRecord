@@ -51,7 +51,7 @@ const CtaCard: React.FC = () => (
             href="/"
             className="w-full bg-[#D2691E] hover:bg-[#A0522D] text-white font-bold text-[15px] py-3 px-6 rounded-[10px] border-2 border-[#5e3f28] shadow-[2px_2px_0px_0px_rgba(94,63,40,1)] transition-colors"
         >
-            Start your own vault — free
+            Start your own collection — free
         </a>
         <p className="text-[11px] text-[#8B5E3C]">Scan a barcode, and your first record is in.</p>
     </div>
@@ -125,7 +125,7 @@ const SharePage: React.FC<SharePageProps> = ({ username }) => {
                             Keeping<span className="text-[#D2691E]">Record</span>
                         </span>
                     </a>
-                    <span className="text-[10px] font-mono tracking-[0.1em] text-[#FDF6E3]/60">SHARED VAULT</span>
+                    <span className="text-[10px] font-mono tracking-[0.1em] text-[#FDF6E3]/60">SHARED COLLECTION</span>
                 </div>
             </header>
 
@@ -139,7 +139,7 @@ const SharePage: React.FC<SharePageProps> = ({ username }) => {
                 {state === 'notfound' && (
                     <div className="pt-16 flex flex-col gap-5">
                         <div className="text-center text-[#5e3f28]">
-                            <p className="text-2xl font-black mb-1">Vault not found</p>
+                            <p className="text-2xl font-black mb-1">Collection not found</p>
                             <p className="text-sm text-[#8B5E3C]">This link doesn't match any collection.</p>
                         </div>
                         <CtaCard />
@@ -149,7 +149,7 @@ const SharePage: React.FC<SharePageProps> = ({ username }) => {
                 {state === 'private' && (
                     <div className="pt-16 flex flex-col gap-5">
                         <div className="text-center text-[#5e3f28]">
-                            <p className="text-2xl font-black mb-1">This vault is private</p>
+                            <p className="text-2xl font-black mb-1">This collection is private</p>
                             <p className="text-sm text-[#8B5E3C]">The owner has turned the share link off.</p>
                         </div>
                         <CtaCard />
@@ -165,7 +165,7 @@ const SharePage: React.FC<SharePageProps> = ({ username }) => {
                             </div>
                             <div>
                                 <h1 className="text-[26px] font-black tracking-tight text-[#3e2b1c] leading-[1.05]">
-                                    {owner.username}'s Vault
+                                    {owner.username}'s Collection
                                 </h1>
                                 <p className="text-[13px] font-medium text-[#8B5E3C] mt-1">
                                     {records.length} records{genre ? ` · leans ${genre}` : ''} · since {sinceYear}
