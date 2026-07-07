@@ -1,10 +1,31 @@
 import type { Handler } from '@netlify/functions';
 
+// Only proxy the hosts the app actually loads cover art from — without
+// this the function is an open relay anyone can abuse
+const ALLOWED_HOST_SUFFIXES = ['.discogs.com', '.mzstatic.com'];
+
+function isAllowed(rawUrl: string): boolean {
+    let url: URL;
+    try {
+        url = new URL(rawUrl);
+    } catch {
+        return false;
+    }
+    if (url.protocol !== 'https:' && url.protocol !== 'http:') return false;
+    return ALLOWED_HOST_SUFFIXES.some(
+        suffix => url.hostname.endsWith(suffix) || url.hostname === suffix.slice(1)
+    );
+}
+
 const handler: Handler = async (event) => {
     const imageUrl = event.queryStringParameters?.url;
 
     if (!imageUrl) {
         return { statusCode: 400, body: 'Missing url parameter' };
+    }
+
+    if (!isAllowed(imageUrl)) {
+        return { statusCode: 403, body: 'Host not allowed' };
     }
 
     try {

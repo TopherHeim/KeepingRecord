@@ -116,7 +116,7 @@ const SharePage: React.FC<SharePageProps> = ({ username }) => {
         <div className="min-h-screen bg-[#d6cbb8]">
             {/* Header */}
             <header className="bg-[#8B5E3C] border-b-4 border-[#5e3f28]">
-                <div className="max-w-md md:max-w-3xl mx-auto px-5 py-3.5 flex items-center justify-between">
+                <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between">
                     <a href="/" className="flex items-center gap-2.5 no-underline">
                         <div className="w-7 h-7 bg-black rounded-full flex items-center justify-center animate-spin-slow">
                             <div className="w-[11px] h-[11px] rounded-full bg-[#D2691E]" />
@@ -129,7 +129,7 @@ const SharePage: React.FC<SharePageProps> = ({ username }) => {
                 </div>
             </header>
 
-            <main className="max-w-md md:max-w-3xl mx-auto px-5 pb-8">
+            <main className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 pb-8">
                 {state === 'loading' && (
                     <div className="flex h-64 items-center justify-center text-[#5e3f28]">
                         <p className="animate-pulse font-bold text-lg">Opening the crate…</p>
@@ -176,7 +176,7 @@ const SharePage: React.FC<SharePageProps> = ({ username }) => {
 
                         {/* Latest addition */}
                         {latest && (
-                            <div className="my-4 md:my-0 md:flex-1 bg-[#5e3f28] bg-clip-padding rounded-[14px] border-2 border-[#3e2b1c] shadow-[4px_4px_0px_0px_rgba(62,43,28,0.6)] px-4 py-3.5 flex items-center gap-3.5 overflow-hidden relative">
+                            <div className="my-4 md:my-0 md:w-[420px] md:flex-none bg-[#5e3f28] bg-clip-padding rounded-[14px] border-2 border-[#3e2b1c] shadow-[4px_4px_0px_0px_rgba(62,43,28,0.6)] px-4 py-3.5 flex items-center gap-3.5 overflow-hidden relative">
                                 <div className="relative w-16 h-16 rounded-full bg-black flex-shrink-0 flex items-center justify-center animate-[spin_4s_linear_infinite] shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
                                     <div className="absolute inset-0 rounded-full opacity-90" style={{ background: 'repeating-radial-gradient(#222 0, #222 2px, #111 3px, #111 4px)' }} />
                                     <div className="w-[22px] h-[22px] rounded-full relative z-10 overflow-hidden" style={{ backgroundColor: latest.spineColor || '#4C566A' }}>
@@ -192,8 +192,8 @@ const SharePage: React.FC<SharePageProps> = ({ username }) => {
                         )}
                         </div>
 
-                        {/* Record grid */}
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5 py-2 pb-5 md:pt-6">
+                        {/* Record grid — same breakpoints as the homepage */}
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 py-2 pb-5 md:pt-6">
                             {records.map(r => <RecordTile key={r.id} record={r} />)}
                         </div>
 

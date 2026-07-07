@@ -104,11 +104,14 @@ create table public.albums (
 );
 
 create table public.vault_users (
-  id uuid primary key default gen_random_uuid(),
+  id uuid primary key,                -- matches the Supabase Auth user id
   username text unique not null,
-  password_hash text not null,
   avatar_icon text,
-  created_at timestamptz default now()
+  created_at timestamptz default now(),
+  is_public boolean not null default true,        -- share-link gate
+  pref_showcase boolean not null default true,    -- settings toggles
+  pref_shake boolean not null default false,
+  pref_opening_tab text not null default 'TILES'
 );
 
 create table public.keep_alive (
