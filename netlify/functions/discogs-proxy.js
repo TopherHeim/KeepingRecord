@@ -1,6 +1,39 @@
 const fetch = require('node-fetch');
 
+// Soft origin gate — blocks other websites from reusing this endpoint
+// (and our Discogs rate limit) from their pages. Same-origin GETs don't
+// send an Origin header, so only reject when a header is present and
+// wrong; absence is allowed.
+const ALLOWED_ORIGINS = new Set([
+    'https://vinyltracker.netlify.app',
+    'capacitor://localhost',
+    'https://localhost',
+    'http://localhost:8888',
+    'http://localhost:3000',
+    'http://localhost:3210',
+]);
+
+function fromAllowed(value) {
+    if (ALLOWED_ORIGINS.has(value)) return true;
+    for (const origin of ALLOWED_ORIGINS) {
+        if (value.startsWith(origin + '/')) return true;
+    }
+    return value.includes('--vinyltracker.netlify.app');
+}
+
+function originAllowed(event) {
+    const origin = event.headers?.origin;
+    if (origin) return fromAllowed(origin);
+    const referer = event.headers?.referer;
+    if (referer) return fromAllowed(referer);
+    return true; // no headers — same-origin GET or non-browser client
+}
+
 exports.handler = async (event) => {
+    if (!originAllowed(event)) {
+        return { statusCode: 403, body: JSON.stringify({ error: 'Forbidden' }) };
+    }
+
     const { q, barcode, artist, album } = event.queryStringParameters || {};
     const token = process.env.DISCOGS_TOKEN;
     const headers = {
