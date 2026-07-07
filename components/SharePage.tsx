@@ -116,7 +116,7 @@ const SharePage: React.FC<SharePageProps> = ({ username }) => {
         <div className="min-h-screen bg-[#d6cbb8]">
             {/* Header */}
             <header className="bg-[#8B5E3C] border-b-4 border-[#5e3f28]">
-                <div className="max-w-md mx-auto px-5 py-3.5 flex items-center justify-between">
+                <div className="max-w-md md:max-w-3xl mx-auto px-5 py-3.5 flex items-center justify-between">
                     <a href="/" className="flex items-center gap-2.5 no-underline">
                         <div className="w-7 h-7 bg-black rounded-full flex items-center justify-center animate-spin-slow">
                             <div className="w-[11px] h-[11px] rounded-full bg-[#D2691E]" />
@@ -129,7 +129,7 @@ const SharePage: React.FC<SharePageProps> = ({ username }) => {
                 </div>
             </header>
 
-            <main className="max-w-md mx-auto px-5 pb-8">
+            <main className="max-w-md md:max-w-3xl mx-auto px-5 pb-8">
                 {state === 'loading' && (
                     <div className="flex h-64 items-center justify-center text-[#5e3f28]">
                         <p className="animate-pulse font-bold text-lg">Opening the crate…</p>
@@ -137,7 +137,7 @@ const SharePage: React.FC<SharePageProps> = ({ username }) => {
                 )}
 
                 {state === 'notfound' && (
-                    <div className="pt-16 flex flex-col gap-5">
+                    <div className="pt-16 flex flex-col gap-5 max-w-md mx-auto">
                         <div className="text-center text-[#5e3f28]">
                             <p className="text-2xl font-black mb-1">Collection not found</p>
                             <p className="text-sm text-[#8B5E3C]">This link doesn't match any collection.</p>
@@ -147,7 +147,7 @@ const SharePage: React.FC<SharePageProps> = ({ username }) => {
                 )}
 
                 {state === 'private' && (
-                    <div className="pt-16 flex flex-col gap-5">
+                    <div className="pt-16 flex flex-col gap-5 max-w-md mx-auto">
                         <div className="text-center text-[#5e3f28]">
                             <p className="text-2xl font-black mb-1">This collection is private</p>
                             <p className="text-sm text-[#8B5E3C]">The owner has turned the share link off.</p>
@@ -158,8 +158,9 @@ const SharePage: React.FC<SharePageProps> = ({ username }) => {
 
                 {state === 'ready' && owner && (
                     <>
-                        {/* Profile row */}
-                        <div className="pt-6 pb-2 flex items-center gap-3.5">
+                        {/* Profile row + latest addition — side by side on desktop */}
+                        <div className="md:flex md:items-center md:gap-6 md:pt-4">
+                        <div className="pt-6 pb-2 md:py-0 md:flex-1 flex items-center gap-3.5">
                             <div className="w-16 h-16 rounded-full bg-[#d4c5a9] border-2 border-[#5e3f28] shadow-[3px_3px_0px_0px_rgba(94,63,40,0.8)] overflow-hidden flex-shrink-0">
                                 <img src={avatarUri(owner.avatar_icon || owner.username)} alt={`${owner.username}'s avatar`} className="w-full h-full object-cover" draggable={false} />
                             </div>
@@ -175,7 +176,7 @@ const SharePage: React.FC<SharePageProps> = ({ username }) => {
 
                         {/* Latest addition */}
                         {latest && (
-                            <div className="my-4 bg-[#5e3f28] bg-clip-padding rounded-[14px] border-2 border-[#3e2b1c] shadow-[4px_4px_0px_0px_rgba(62,43,28,0.6)] px-4 py-3.5 flex items-center gap-3.5 overflow-hidden relative">
+                            <div className="my-4 md:my-0 md:flex-1 bg-[#5e3f28] bg-clip-padding rounded-[14px] border-2 border-[#3e2b1c] shadow-[4px_4px_0px_0px_rgba(62,43,28,0.6)] px-4 py-3.5 flex items-center gap-3.5 overflow-hidden relative">
                                 <div className="relative w-16 h-16 rounded-full bg-black flex-shrink-0 flex items-center justify-center animate-[spin_4s_linear_infinite] shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
                                     <div className="absolute inset-0 rounded-full opacity-90" style={{ background: 'repeating-radial-gradient(#222 0, #222 2px, #111 3px, #111 4px)' }} />
                                     <div className="w-[22px] h-[22px] rounded-full relative z-10 overflow-hidden" style={{ backgroundColor: latest.spineColor || '#4C566A' }}>
@@ -189,13 +190,16 @@ const SharePage: React.FC<SharePageProps> = ({ username }) => {
                                 </div>
                             </div>
                         )}
+                        </div>
 
                         {/* Record grid */}
-                        <div className="grid grid-cols-2 gap-3.5 py-2 pb-5">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5 py-2 pb-5 md:pt-6">
                             {records.map(r => <RecordTile key={r.id} record={r} />)}
                         </div>
 
-                        <CtaCard />
+                        <div className="md:max-w-md md:mx-auto">
+                            <CtaCard />
+                        </div>
                     </>
                 )}
             </main>
