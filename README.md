@@ -140,3 +140,6 @@ The native app calls the deployed Netlify functions directly (see `services/apiB
 - Pressing details & condition grading
 - Shelf view rendering records as colored spines
 - Play history and listening stats
+- Fix header on shared collection page
+- Improve stats page to avoid overlap
+- Add additional settings and customization
