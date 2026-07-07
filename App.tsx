@@ -563,13 +563,21 @@ export const App: React.FC = () => {
     const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const IDLE_TIMEOUT = 60 * 1000; // 1 minute
 
+    // Any open overlay suspends the idle takeover — otherwise the app
+    // flips to the showcase underneath Settings/modals and the user gets
+    // dumped there when they close the overlay
+    const overlayOpen =
+        isSettingsOpen || isShareOpen || isModalOpen || !!editingRecord ||
+        !!playingRecord || isScannerOpen || isPickerOpen ||
+        confirmModal.isOpen || showLoginModal;
+
     const resetIdleTimer = useCallback(() => {
         if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
-        if (!showcaseEnabled) return; // preference off — never auto-enter showcase
+        if (!showcaseEnabled || overlayOpen) return;
         idleTimerRef.current = setTimeout(() => {
             setActiveTab(Tab.SHOWCASE);
         }, IDLE_TIMEOUT);
-    }, [showcaseEnabled]);
+    }, [showcaseEnabled, overlayOpen]);
 
     useEffect(() => {
         const events = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll'];
