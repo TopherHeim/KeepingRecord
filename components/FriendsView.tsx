@@ -267,7 +267,7 @@ const FriendsView: React.FC<FriendsViewProps> = ({
             : 'No new collectors to discover right now.';
 
     return (
-        <div className="p-[18px] md:p-6 max-w-3xl mx-auto min-h-screen">
+        <div className="p-[18px] md:p-6 max-w-6xl mx-auto min-h-screen">
             <h2 className="text-xl font-black tracking-tight text-[#3e2b1c] mb-4">Friends</h2>
 
             {/* YOUR PROFILE — back to your own collection */}
