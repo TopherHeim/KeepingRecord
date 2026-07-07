@@ -10,3 +10,10 @@ port = 8888
 
 [build.environment]
 SECRETS_SCAN_OMIT_KEYS = "VITE_SUPABASE_ANON_KEY,VITE_SUPABASE_URL,VITE_DEFAULT_USER_ID"
+
+# SPA fallback so client-side routes like /v/<username> resolve.
+# Function routes (/.netlify/functions/*, /api/gemini) take precedence.
+[[redirects]]
+from = "/*"
+to = "/index.html"
+status = 200

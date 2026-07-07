@@ -26,7 +26,7 @@ const AvatarPicker: React.FC<AvatarPickerProps> = ({ currentSeed, onSave, onClos
     };
 
     return (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[90] p-4 backdrop-blur-sm">
             <div className="bg-[#fdf6e3] bg-clip-padding border-2 border-[#5e3f28] rounded-2xl p-8 max-w-sm w-full shadow-2xl flex flex-col items-center">
 
                 <h3 className="text-2xl font-bold text-[#5e3f28] mb-2 text-center">Character Creator</h3>

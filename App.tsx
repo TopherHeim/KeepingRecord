@@ -19,6 +19,9 @@ import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import VinylShowcase from './components/VinylShowcase';
 import { getDominantColor } from './services/dominantColor';
 import { API_BASE } from './services/apiBase';
+import BottomNav from './components/BottomNav';
+import SettingsScreen from './components/SettingsScreen';
+import ShareSheet from './components/ShareSheet';
 
 
 export const App: React.FC = () => {
@@ -37,6 +40,9 @@ export const App: React.FC = () => {
     const [currentUser, setCurrentUser] = useState<User | null>(null);
     const [isPickerOpen, setIsPickerOpen] = useState(false);
     const [authReady, setAuthReady] = useState(false);
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [isShareOpen, setIsShareOpen] = useState(false);
+    const [userEmail, setUserEmail] = useState<string | null>(null);
 
     const [confirmModal, setConfirmModal] = useState<{
         isOpen: boolean;
@@ -64,6 +70,7 @@ export const App: React.FC = () => {
                 setUserId(session.user.id);
                 setIsLoggedIn(true);
                 setViewingUserId(session.user.id);
+                setUserEmail(session.user.email ?? null);
 
                 // Fetch user profile
                 const { data } = await supabase
@@ -71,7 +78,14 @@ export const App: React.FC = () => {
                     .select('*')
                     .eq('id', session.user.id)
                     .single();
-                if (data) setCurrentUser(data);
+                if (data) {
+                    setCurrentUser(data);
+                    // Honor the "Opening tab" preference from Settings
+                    const opening = data.pref_opening_tab;
+                    if (opening && opening !== Tab.SHOWCASE && (Object.values(Tab) as string[]).includes(opening)) {
+                        setActiveTab(opening as Tab);
+                    }
+                }
 
                 // Trigger fetch immediately with the ID we just got
                 fetchRecords(session.user.id);
@@ -89,12 +103,16 @@ export const App: React.FC = () => {
                 setUserId(session.user.id);
                 setIsLoggedIn(true);
                 setViewingUserId(session.user.id);
+                setUserEmail(session.user.email ?? null);
                 fetchRecords(session.user.id);
             } else {
                 setUserId(null);
                 setIsLoggedIn(false);
                 setCurrentUser(null);
                 setViewingUserId(null);
+                setUserEmail(null);
+                setIsSettingsOpen(false);
+                setIsShareOpen(false);
                 fetchRecords(import.meta.env.VITE_DEFAULT_USER_ID);
             }
         });
@@ -380,8 +398,18 @@ export const App: React.FC = () => {
             return;
         }
 
-        const otherUsers = data.filter(user => user.id !== userId);
-        setExploreUsers(otherUsers);
+        // Tally record counts for the "N records" row subtitles
+        const { data: albumOwners } = await supabase
+            .from('albums')
+            .select('user_id');
+        const counts: Record<string, number> = {};
+        (albumOwners ?? []).forEach((a: any) => {
+            counts[a.user_id] = (counts[a.user_id] || 0) + 1;
+        });
+
+        const withCounts = data.map(user => ({ ...user, record_count: counts[user.id] ?? 0 }));
+        setExploreUsers(withCounts.filter(user => user.id !== userId));
+        setCurrentUser(prev => prev ? { ...prev, record_count: counts[prev.id] ?? 0 } : prev);
     };
 
     // 9. UPDATE AVATAR
@@ -406,6 +434,33 @@ export const App: React.FC = () => {
         }
     };
 
+    // 9b. UPDATE PREFERENCES (Settings screen + Share sheet)
+    const handleUpdatePrefs = async (patch: Partial<User>) => {
+        if (!userId) return;
+        setCurrentUser(prev => prev ? { ...prev, ...patch } : prev);
+
+        const { error } = await supabase
+            .from('vault_users')
+            .update(patch)
+            .eq('id', userId);
+
+        if (error) toast.error('Failed to save settings.');
+    };
+
+    // 9c. CHANGE PASSWORD (sends a reset email)
+    const handleChangePassword = async () => {
+        if (!userEmail) {
+            toast.error('No email on file for this account.');
+            return;
+        }
+        const { error } = await supabase.auth.resetPasswordForEmail(userEmail);
+        if (error) {
+            toast.error('Could not send reset email: ' + error.message);
+        } else {
+            toast.success('Password reset email sent!');
+        }
+    };
+
     // 10. LOGOUT
     const handleLogout = () => {
         showConfirm(
@@ -424,6 +479,27 @@ export const App: React.FC = () => {
 
     const collectionRecords = records.filter(r => r.status === 'collection' || !r.status);
     const wishlistRecords = records.filter(r => r.status === 'wishlist');
+
+    // Preference gates — anonymous visitors keep the original behavior
+    const showcaseEnabled = !currentUser || currentUser.pref_showcase !== false;
+    const shakeEnabled = currentUser ? !!currentUser.pref_shake : true;
+
+    // Mono meta lines under the grid titles (redesign spec)
+    const computeTopGenre = (recs: Album[]): string | undefined => {
+        const counts: Record<string, number> = {};
+        recs.forEach(r => { if (r.genre) counts[r.genre] = (counts[r.genre] || 0) + 1; });
+        return Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0];
+    };
+    const collectionTopGenre = computeTopGenre(collectionRecords);
+    const collectionSince = collectionRecords.length
+        ? Math.min(...collectionRecords.map(r => new Date(r.addedAt).getFullYear()))
+        : null;
+    const collectionMeta = collectionRecords.length
+        ? `${collectionRecords.length} record${collectionRecords.length === 1 ? '' : 's'}${collectionTopGenre ? ` · leans ${collectionTopGenre}` : ''}${collectionSince ? ` · since ${collectionSince}` : ''}`
+        : undefined;
+    const wishlistMeta = wishlistRecords.length
+        ? `${wishlistRecords.length} record${wishlistRecords.length === 1 ? '' : 's'} · most-wanted`
+        : undefined;
 
     // SHAKE TO PLAY RANDOM RECORD
     const [motionPermission, setMotionPermission] = useState<'unknown' | 'granted' | 'denied'>('unknown');
@@ -452,7 +528,7 @@ export const App: React.FC = () => {
     const lastAccRef = useRef({ x: 0, y: 0, z: 0 });
 
     useEffect(() => {
-        if (motionPermission !== 'granted' || collectionRecords.length === 0) return;
+        if (motionPermission !== 'granted' || collectionRecords.length === 0 || !shakeEnabled) return;
 
         const THRESHOLD = 25;
         const COOLDOWN = 2000;
@@ -481,7 +557,7 @@ export const App: React.FC = () => {
 
         window.addEventListener('devicemotion', handleMotion);
         return () => window.removeEventListener('devicemotion', handleMotion);
-    }, [motionPermission, collectionRecords]);
+    }, [motionPermission, collectionRecords, shakeEnabled]);
 
     // IDLE SHOWCASE TIMER
     const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -489,10 +565,11 @@ export const App: React.FC = () => {
 
     const resetIdleTimer = useCallback(() => {
         if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+        if (!showcaseEnabled) return; // preference off — never auto-enter showcase
         idleTimerRef.current = setTimeout(() => {
             setActiveTab(Tab.SHOWCASE);
         }, IDLE_TIMEOUT);
-    }, []); // empty deps — uses ref so never stale
+    }, [showcaseEnabled]);
 
     useEffect(() => {
         const events = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll'];
@@ -516,7 +593,8 @@ export const App: React.FC = () => {
                         requestMotionPermission();
                     }}
                     isLoggedIn={isLoggedIn}
-                    onLogout={handleLogout}
+                    currentUser={currentUser}
+                    onOpenSettings={() => setIsSettingsOpen(true)}
                     onLoginClick={() => {
                         setShowLoginModal(true);
                         requestMotionPermission();
@@ -524,7 +602,7 @@ export const App: React.FC = () => {
                 />
             )}
 
-            <main className="flex-grow">
+            <main className={activeTab !== Tab.SHOWCASE ? 'flex-grow pb-24 md:pb-0' : 'flex-grow'}>
                 {/* Showcase renders outside the isLoading check so it always works */}
                 {activeTab === Tab.SHOWCASE && (
                     <VinylShowcase
@@ -558,6 +636,7 @@ export const App: React.FC = () => {
                                                 ? "Your Collection"
                                                 : "Topher's Collection"
                                     }
+                                    meta={collectionMeta}
                                     isAdmin={!!userId && viewingUserId === userId}
                                     onLoginClick={() => setShowLoginModal(true)}
                                     userId={userId}
@@ -595,6 +674,7 @@ export const App: React.FC = () => {
                                                 ? "Your Wishlist"
                                                 : "Topher's Wishlist"
                                     }
+                                    meta={wishlistMeta}
                                     isAdmin={!!userId && viewingUserId === userId}
                                     onLoginClick={() => setShowLoginModal(true)}
                                     userId={userId}
@@ -615,6 +695,44 @@ export const App: React.FC = () => {
                     )
                 )}
             </main>
+
+            {/* Mobile bottom-tab navigation */}
+            {activeTab !== Tab.SHOWCASE && (
+                <BottomNav
+                    activeTab={activeTab}
+                    setActiveTab={(tab) => {
+                        setActiveTab(tab);
+                        requestMotionPermission();
+                    }}
+                />
+            )}
+
+            {isSettingsOpen && currentUser && (
+                <SettingsScreen
+                    user={currentUser}
+                    email={userEmail}
+                    recordCount={collectionRecords.length}
+                    onClose={() => setIsSettingsOpen(false)}
+                    onOpenShare={() => setIsShareOpen(true)}
+                    onEditAvatar={() => setIsPickerOpen(true)}
+                    onChangePassword={handleChangePassword}
+                    onUpdatePrefs={handleUpdatePrefs}
+                    onLogout={() => {
+                        setIsShareOpen(false);
+                        setIsSettingsOpen(false);
+                        handleLogout();
+                    }}
+                />
+            )}
+
+            {isShareOpen && currentUser && (
+                <ShareSheet
+                    user={currentUser}
+                    records={collectionRecords}
+                    onClose={() => setIsShareOpen(false)}
+                    onToggleLive={() => handleUpdatePrefs({ is_public: currentUser.is_public === false })}
+                />
+            )}
 
             <AddRecordModal
                 isOpen={isModalOpen || !!editingRecord}

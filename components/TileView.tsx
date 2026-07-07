@@ -12,6 +12,7 @@ import {
 interface TileViewProps {
     records: Album[];
     title: string;
+    meta?: string;
     onAddClick: () => void;
     onScanClick: () => void;
     onDelete: (id: string) => void;
@@ -148,6 +149,7 @@ const TileView: React.FC<TileViewProps> = ({
                                                beforeGridContent,
                                                afterGridContent,
                                                title,
+                                               meta,
                                                isAdmin,
                                                onLoginClick,
                                                userId,
@@ -209,9 +211,12 @@ const TileView: React.FC<TileViewProps> = ({
             {beforeGridContent}
 
             {title && (
-                <h2 className="text-2xl font-bold text-[#5e3f28] mb-6 mt-8 border-b-2 border-[#5e3f28]/10 pb-4">
-                    {title}
-                </h2>
+                <div className="mb-6 mt-8 border-b-2 border-[#5e3f28]/10 pb-4">
+                    <h2 className="text-2xl font-bold text-[#5e3f28]">{title}</h2>
+                    {meta && (
+                        <p className="text-xs font-mono text-[#8B5E3C] mt-1">{meta}</p>
+                    )}
+                </div>
             )}
 
             {filteredRecords.length === 0 ? (
