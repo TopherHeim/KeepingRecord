@@ -90,9 +90,9 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({
                         </button>
                     </div>
 
-                    {/* Share your vault */}
+                    {/* Share your collection */}
                     <div>
-                        <SectionLabel>Share your vault</SectionLabel>
+                        <SectionLabel>Share your collection</SectionLabel>
                         <div className="bg-[#5e3f28] bg-clip-padding border-2 border-[#3e2b1c] rounded-[14px] shadow-[4px_4px_0px_0px_rgba(62,43,28,0.6)] p-[18px] relative overflow-hidden">
                             <Disc
                                 size={150}
