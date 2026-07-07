@@ -11,7 +11,7 @@ import ConfirmModal from './components/ConfirmModal';
 import { useToast } from './Hooks/useToast';
 import { Tab, Album, NewAlbumInput, User } from './types';
 import LoginModal from './components/LoginModal';
-import ExploreView from "@/components/ExplorerView.tsx";
+import FriendsView from './components/FriendsView';
 import AvatarPicker from './components/AvatarPicker';
 import BarcodeScanner from "@/components/BarcodeScanner.tsx";
 import { batchFetchCovers, saveSpineColor } from './services/discogsService';
@@ -653,17 +653,17 @@ export const App: React.FC = () => {
                             )}
 
                             {activeTab === Tab.EXPLORE && (
-                                <ExploreView
+                                <FriendsView
                                     users={exploreUsers}
                                     currentUser={currentUser}
                                     userId={userId || undefined}
-                                    viewingUserId={viewingUserId}
                                     onSelectUser={(id) => {
                                         setViewingUserId(id);
                                         fetchRecords(id);
                                         setActiveTab(Tab.TILES);
                                     }}
                                     onUpdateAvatar={() => setIsPickerOpen(true)}
+                                    onLoginClick={() => setShowLoginModal(true)}
                                 />
                             )}
 
