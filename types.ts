@@ -31,6 +31,10 @@ export interface User {
     username: string;
     avatar_icon?: string;
     record_count?: number;
+    is_public?: boolean;
+    pref_showcase?: boolean;
+    pref_shake?: boolean;
+    pref_opening_tab?: string;
 }
 
 export interface NewAlbumInput {

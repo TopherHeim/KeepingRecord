@@ -1,7 +1,8 @@
 import React from 'react';
-import { Music } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { User } from '../types';
 import ProfileIcon from './ProfileIcon';
+import { avatarUri } from '../services/avatar';
 
 interface ExploreViewProps {
     users: User[];
@@ -21,31 +22,31 @@ const ExploreView: React.FC<ExploreViewProps> = ({
     const showYourProfileCard = !!userId && !!currentUser;
 
     return (
-        <div className="p-6 max-w-7xl mx-auto min-h-screen">
-            <h2 className="text-2xl font-bold text-[#5e3f28] mb-6 border-b-2 border-[#5e3f28]/10 pb-4">
-                Explore Other Collections
+        <div className="p-[18px] md:p-6 max-w-2xl mx-auto min-h-screen">
+            <h2 className="text-xl font-black tracking-tight text-[#3e2b1c] mb-4">
+                Friends' Collections
             </h2>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="flex flex-col gap-3">
 
-                {/* YOUR PROFILE — Uses the prop from App.tsx */}
+                {/* YOUR PROFILE — back to your own collection */}
                 {showYourProfileCard && (
                     <div
                         onClick={() => onSelectUser(userId!)}
-                        className="group relative bg-[#e3dcd2] bg-clip-padding rounded-lg shadow-[4px_4px_0px_0px_rgba(94,63,40,0.8)]
-                       border-2 border-[#5e3f28] p-4 hover:-translate-y-1 transition-transform cursor-pointer"
+                        className="bg-[#e3dcd2] bg-clip-padding border-2 border-[#5e3f28] rounded-xl shadow-[4px_4px_0px_0px_rgba(94,63,40,0.8)] p-3.5 flex items-center gap-3 cursor-pointer hover:-translate-y-[3px] transition-transform duration-150"
                     >
-                        <div className="flex items-center gap-3 mb-2">
-                            <ProfileIcon
-                                seed={currentUser.avatar_icon || currentUser.username}
-                                isEditable={true}
-                                onEdit={onUpdateAvatar}
-                            />
-                            <h3 className="font-bold text-lg text-[#3e2b1c]">Your Collection</h3>
+                        <ProfileIcon
+                            seed={currentUser.avatar_icon || currentUser.username}
+                            isEditable={true}
+                            onEdit={onUpdateAvatar}
+                        />
+                        <div className="flex-1 min-w-0">
+                            <p className="font-black text-base text-[#3e2b1c] truncate">Your Collection</p>
+                            <p className="text-xs font-mono text-[#8B5E3C] mt-0.5">
+                                {currentUser.record_count != null ? `${currentUser.record_count} records` : 'back to your shelf'}
+                            </p>
                         </div>
-                        <p className="text-sm text-[#8B5E3C]/70 flex items-center gap-1">
-                            <Music size={14} /> Go back to your collection
-                        </p>
+                        <ChevronRight size={18} strokeWidth={2.5} className="text-[#8B5E3C] flex-shrink-0" />
                     </div>
                 )}
 
@@ -54,20 +55,23 @@ const ExploreView: React.FC<ExploreViewProps> = ({
                     <div
                         key={user.id}
                         onClick={() => onSelectUser(user.id)}
-                        className="group relative bg-[#e3dcd2] bg-clip-padding rounded-lg shadow-[4px_4px_0px_0px_rgba(94,63,40,0.8)]
-                       border-2 border-[#5e3f28] p-4 hover:-translate-y-1 transition-transform cursor-pointer"
+                        className="bg-[#e3dcd2] bg-clip-padding border-2 border-[#5e3f28] rounded-xl shadow-[4px_4px_0px_0px_rgba(94,63,40,0.8)] p-3.5 flex items-center gap-3 cursor-pointer hover:-translate-y-[3px] transition-transform duration-150"
                     >
-                        <div className="flex items-center gap-3 mb-2">
-                            <ProfileIcon
-                                seed={user.avatar_icon || user.username}
-                                isEditable={user.id === userId}
-                                onEdit={onUpdateAvatar}
+                        <div className="w-12 h-12 rounded-full bg-[#d4c5a9] border-2 border-[#5e3f28] overflow-hidden flex-shrink-0">
+                            <img
+                                src={avatarUri(user.avatar_icon || user.username)}
+                                alt={`${user.username}'s avatar`}
+                                className="w-full h-full object-cover"
+                                draggable={false}
                             />
-                            <h3 className="font-bold text-lg text-[#3e2b1c]">{user.username}</h3>
                         </div>
-                        <p className="text-sm text-[#8B5E3C]/70 flex items-center gap-1">
-                            <Music size={14} /> View collection
-                        </p>
+                        <div className="flex-1 min-w-0">
+                            <p className="font-black text-base text-[#3e2b1c] truncate">{user.username}</p>
+                            <p className="text-xs font-mono text-[#8B5E3C] mt-0.5">
+                                {user.record_count != null ? `${user.record_count} records` : 'view collection'}
+                            </p>
+                        </div>
+                        <ChevronRight size={18} strokeWidth={2.5} className="text-[#8B5E3C] flex-shrink-0" />
                     </div>
                 ))}
             </div>
