@@ -23,6 +23,7 @@ import BottomNav from './components/BottomNav';
 import SettingsScreen from './components/SettingsScreen';
 import ShareSheet from './components/ShareSheet';
 import ResetPasswordModal from './components/ResetPasswordModal';
+import DiscogsImportModal from './components/DiscogsImportModal';
 
 
 export const App: React.FC = () => {
@@ -45,6 +46,7 @@ export const App: React.FC = () => {
     const [isShareOpen, setIsShareOpen] = useState(false);
     const [userEmail, setUserEmail] = useState<string | null>(null);
     const [isResetOpen, setIsResetOpen] = useState(false);
+    const [isImportOpen, setIsImportOpen] = useState(false);
 
     const [confirmModal, setConfirmModal] = useState<{
         isOpen: boolean;
@@ -677,7 +679,7 @@ export const App: React.FC = () => {
     const overlayOpen =
         isSettingsOpen || isShareOpen || isModalOpen || !!editingRecord ||
         !!playingRecord || isScannerOpen || isPickerOpen ||
-        confirmModal.isOpen || showLoginModal || isResetOpen;
+        confirmModal.isOpen || showLoginModal || isResetOpen || isImportOpen;
 
     const resetIdleTimer = useCallback(() => {
         if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
@@ -835,6 +837,7 @@ export const App: React.FC = () => {
                     onUpdatePrefs={handleUpdatePrefs}
                     onChangeUsername={handleChangeUsername}
                     onDeleteAccount={handleDeleteAccount}
+                    onImportDiscogs={() => setIsImportOpen(true)}
                     onLogout={() => {
                         setIsShareOpen(false);
                         setIsSettingsOpen(false);
@@ -878,6 +881,19 @@ export const App: React.FC = () => {
                     currentSeed={currentUser?.avatar_icon || currentUser?.username || 'vinyl-fan'}
                     onClose={() => setIsPickerOpen(false)}
                     onSave={handleUpdateAvatar}
+                />
+            )}
+
+            {isImportOpen && userId && (
+                <DiscogsImportModal
+                    records={records}
+                    userId={userId}
+                    onClose={() => setIsImportOpen(false)}
+                    onImported={(count) => {
+                        setIsImportOpen(false);
+                        toast.success(`Imported ${count} record${count === 1 ? '' : 's'}! Cover art is on its way.`);
+                        fetchRecords(userId);
+                    }}
                 />
             )}
 

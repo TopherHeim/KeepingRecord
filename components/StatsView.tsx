@@ -11,9 +11,9 @@ const COLORS = ['#D2691E', '#CD853F', '#8B4513', '#A0522D', '#DEB887', '#5e3f28'
 
 const StatsView: React.FC<StatsViewProps> = ({ records }) => {
   
-  // Calculate Genre Data
+  // Calculate Genre Data — imported records may not have a genre yet
   const genreCounts = records.reduce((acc, record) => {
-    acc[record.genre] = (acc[record.genre] || 0) + 1;
+    if (record.genre) acc[record.genre] = (acc[record.genre] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
 
@@ -22,10 +22,13 @@ const StatsView: React.FC<StatsViewProps> = ({ records }) => {
     value: genreCounts[key]
   })).sort((a, b) => b.value - a.value);
 
-  // Calculate Decade Data
+  // Calculate Decade Data — skip records with an unknown year
   const decadeCounts = records.reduce((acc, record) => {
-    const decade = Math.floor(record.year / 10) * 10;
-    acc[decade] = (acc[decade] || 0) + 1;
+    const year = Number(record.year);
+    if (!isNaN(year) && year > 0) {
+      const decade = Math.floor(year / 10) * 10;
+      acc[decade] = (acc[decade] || 0) + 1;
+    }
     return acc;
   }, {} as Record<number, number>);
 

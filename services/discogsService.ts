@@ -75,6 +75,8 @@ export async function batchFetchCovers(
     for (const album of missing) {
         const url = await getCoverUrl(album.id, album.artist, album.title, album.coverUrl);
         if (url) onUpdate(album.id, url);
-        await new Promise((r) => setTimeout(r, 300));
+        // Discogs allows 60 req/min and each lookup can cost two calls
+        // (search + master) — pace for large post-import backfills
+        await new Promise((r) => setTimeout(r, 2000));
     }
 }

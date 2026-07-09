@@ -7,6 +7,7 @@ A web app for cataloging and tracking a vinyl record collection — with barcode
 ## Features
 
 - **Collection & wishlist** — add records by hand or by scanning the barcode with your phone camera
+- **Discogs import** — migrate your whole collection at once from Discogs' CSV export, with duplicates skipped and cover art backfilled automatically
 - **Barcode scanning** — native `BarcodeDetector` API with a Quagga fallback; looks up releases on Discogs by UPC/EAN
 - **Automatic metadata** — cover art, artist/title canonicalization, genre, and year filled in from Discogs and iTunes
 - **Spine colors** — each record's dominant spine color is extracted from its cover art and used throughout the UI

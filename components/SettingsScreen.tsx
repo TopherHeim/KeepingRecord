@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { User, Tab } from '../types';
 import { avatarUri } from '../services/avatar';
 import Toggle from './Toggle';
-import { ChevronLeft, ChevronRight, Disc, Share2, LogOut, Trash2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Disc, Share2, LogOut, Trash2, Upload } from 'lucide-react';
 
 interface SettingsScreenProps {
     user: User;
@@ -16,6 +16,7 @@ interface SettingsScreenProps {
     onUpdatePrefs: (patch: Partial<User>) => void;
     onChangeUsername: (newName: string) => Promise<boolean>;
     onDeleteAccount: () => void;
+    onImportDiscogs: () => void;
 }
 
 const IDLE_DELAYS: { seconds: number; label: string }[] = [
@@ -50,6 +51,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({
     onUpdatePrefs,
     onChangeUsername,
     onDeleteAccount,
+    onImportDiscogs,
 }) => {
     const openingTab = user.pref_opening_tab || Tab.TILES;
     const openingLabel = TAB_ORDER.find(t => t.value === openingTab)?.label ?? 'Collection';
@@ -154,6 +156,27 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({
                                 className="w-full bg-[#D2691E] hover:bg-[#A0522D] text-white text-sm font-bold py-3 rounded-[10px] flex items-center justify-center gap-2 transition-colors relative"
                             >
                                 <Share2 size={16} strokeWidth={2.5} /> Share link
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Collection */}
+                    <div>
+                        <SectionLabel>Collection</SectionLabel>
+                        <div className="bg-[#FDF6E3] bg-clip-padding border-2 border-[#5e3f28] rounded-[14px] shadow-[4px_4px_0px_0px_rgba(94,63,40,0.8)] overflow-hidden">
+                            <button
+                                type="button"
+                                onClick={onImportDiscogs}
+                                className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-[#faf3e2] transition-colors text-left"
+                            >
+                                <div className="flex items-center gap-2.5">
+                                    <Upload size={17} strokeWidth={2.5} className="text-[#8B5E3C]" />
+                                    <div>
+                                        <span className="text-sm font-semibold text-[#3e2b1c]">Import from Discogs</span>
+                                        <p className="text-[11px] text-[#8B5E3C] mt-0.5">Bring your collection over from a CSV export</p>
+                                    </div>
+                                </div>
+                                <ChevronRight size={16} strokeWidth={2.5} className="text-[#8B5E3C]" />
                             </button>
                         </div>
                     </div>
