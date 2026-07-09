@@ -115,6 +115,15 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onClose }) => {
                         setError('Could not start the camera. Check camera permissions and try again.');
                         return;
                     }
+                    // Quagga reuses the <video> it finds inside #reader — make
+                    // sure it carries the attributes iOS needs for inline
+                    // playback, or the feed renders as a black box
+                    const video = document.querySelector<HTMLVideoElement>('#reader video');
+                    if (video) {
+                        video.setAttribute('playsinline', 'true');
+                        video.setAttribute('webkit-playsinline', 'true');
+                        video.muted = true;
+                    }
                     Quagga.start();
                     setEngine('quagga');
                 });
@@ -163,10 +172,13 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onClose }) => {
                     className="w-full overflow-hidden rounded-xl border-4 border-[#5e3f28] bg-black bg-clip-padding shadow-inner"
                     style={{ height: '240px' }}
                 >
+                    {/* Both engines render into this element: the native path
+                        attaches the stream itself, and Quagga adopts any
+                        <video> already inside its target — so it must stay
+                        visible for both, or the feed shows as a black box */}
                     <video
                         ref={videoRef}
                         className="w-full h-full object-cover"
-                        style={{ display: engine === 'native' ? 'block' : 'none' }}
                         playsInline
                         muted
                     />
