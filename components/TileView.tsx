@@ -114,11 +114,14 @@ const RecordCard: React.FC<RecordCardProps> = ({
 
             {/* ── Text info over gradient ── */}
             <div className="absolute bottom-0 left-0 right-0 p-3 z-10">
-                <div className="mb-1.5">
-                    <span className="text-[9px] font-mono font-bold tracking-widest uppercase px-2 py-0.5 rounded-full border border-white/20 text-white/65 bg-black/30">
-                        {record.genre}
-                    </span>
-                </div>
+                {/* Imported records may have no genre yet — skip the empty pill */}
+                {record.genre && (
+                    <div className="mb-1.5">
+                        <span className="text-[9px] font-mono font-bold tracking-widest uppercase px-2 py-0.5 rounded-full border border-white/20 text-white/65 bg-black/30">
+                            {record.genre}
+                        </span>
+                    </div>
+                )}
                 <h3
                     className="font-black text-white leading-tight line-clamp-2 capitalize mb-1"
                     style={{ fontSize: '15px', textShadow: '0 1px 6px rgba(0,0,0,0.9)' }}
