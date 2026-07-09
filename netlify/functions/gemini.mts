@@ -5,6 +5,7 @@ import type { Config } from "@netlify/functions";
 // the app itself. Headers can be spoofed, but this blocks other sites
 // embedding the endpoint and casual replay abuse.
 const ALLOWED_ORIGINS = new Set([
+  "https://keepingrecord.netlify.app",
   "https://vinyltracker.netlify.app",
   "capacitor://localhost",
   "https://localhost",
@@ -15,7 +16,9 @@ const ALLOWED_ORIGINS = new Set([
 
 function originAllowed(req: Request): boolean {
   const origin = req.headers.get("origin") ?? "";
-  return ALLOWED_ORIGINS.has(origin) || origin.endsWith("--vinyltracker.netlify.app");
+  return ALLOWED_ORIGINS.has(origin)
+    || origin.endsWith("--keepingrecord.netlify.app")
+    || origin.endsWith("--vinyltracker.netlify.app");
 }
 
 export default async (req: Request) => {

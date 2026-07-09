@@ -2,7 +2,7 @@
 
 A web app for cataloging and tracking a vinyl record collection — with barcode scanning, automatic cover art and metadata lookup, AI-powered recommendations, and a native iOS app.
 
-**Live site:** [https://vinyltracker.netlify.app/](https://vinyltracker.netlify.app/)
+**Live site:** [https://keepingrecord.netlify.app/](https://keepingrecord.netlify.app/)
 
 ## Features
 

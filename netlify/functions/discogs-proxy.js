@@ -5,6 +5,7 @@ const fetch = require('node-fetch');
 // send an Origin header, so only reject when a header is present and
 // wrong; absence is allowed.
 const ALLOWED_ORIGINS = new Set([
+    'https://keepingrecord.netlify.app',
     'https://vinyltracker.netlify.app',
     'capacitor://localhost',
     'https://localhost',
@@ -18,7 +19,8 @@ function fromAllowed(value) {
     for (const origin of ALLOWED_ORIGINS) {
         if (value.startsWith(origin + '/')) return true;
     }
-    return value.includes('--vinyltracker.netlify.app');
+    // Netlify deploy previews (deploy-preview-N--site.netlify.app)
+    return value.includes('--keepingrecord.netlify.app') || value.includes('--vinyltracker.netlify.app');
 }
 
 function originAllowed(event) {
