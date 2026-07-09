@@ -5,5 +5,5 @@ import { Capacitor } from '@capacitor/core';
 // capacitor://localhost, so relative fetches never reach Netlify — calls must
 // target the deployed site directly.
 export const API_BASE: string = Capacitor.isNativePlatform()
-    ? (import.meta.env.VITE_API_BASE || 'https://vinyltracker.netlify.app')
+    ? (import.meta.env.VITE_API_BASE || 'https://keepingrecord.netlify.app')
     : '';
