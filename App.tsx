@@ -461,6 +461,61 @@ export const App: React.FC = () => {
         }
     };
 
+    // 9d. CHANGE USERNAME — returns false on a uniqueness conflict so the
+    // settings screen can show "taken" inline
+    const handleChangeUsername = async (newName: string): Promise<boolean> => {
+        if (!userId) return false;
+
+        const { error } = await supabase
+            .from('vault_users')
+            .update({ username: newName })
+            .eq('id', userId);
+
+        if (error) {
+            if (error.code === '23505') return false;
+            toast.error('Failed to update username: ' + error.message);
+            return false;
+        }
+
+        setCurrentUser(prev => prev ? { ...prev, username: newName } : prev);
+        setExploreUsers(prev => prev.map(u => u.id === userId ? { ...u, username: newName } : u));
+        toast.success(`Username changed to ${newName}!`);
+        return true;
+    };
+
+    // 9e. DELETE ACCOUNT — server-side function wipes records and the auth user
+    const handleDeleteAccount = () => {
+        showConfirm(
+            'Delete Account',
+            "This permanently deletes your account and every record in your collection. This can't be undone.",
+            async () => {
+                closeConfirm();
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) {
+                    toast.error('Not logged in.');
+                    return;
+                }
+                try {
+                    const res = await fetch(`${API_BASE}/.netlify/functions/delete-account`, {
+                        method: 'POST',
+                        headers: { Authorization: `Bearer ${session.access_token}` },
+                    });
+                    if (!res.ok) {
+                        toast.error('Could not delete account. Please try again.');
+                        return;
+                    }
+                    setIsSettingsOpen(false);
+                    await supabase.auth.signOut();
+                    toast.info('Your account has been deleted.');
+                } catch {
+                    toast.error('Could not delete account. Please try again.');
+                }
+            },
+            true,
+            'Delete Forever'
+        );
+    };
+
     // 10. LOGOUT
     const handleLogout = () => {
         showConfirm(
@@ -561,7 +616,8 @@ export const App: React.FC = () => {
 
     // IDLE SHOWCASE TIMER
     const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const IDLE_TIMEOUT = 60 * 1000; // 1 minute
+    // "Showcase delay" preference, in seconds — anonymous visitors get the default
+    const idleTimeoutMs = (currentUser?.pref_idle_delay ?? 60) * 1000;
 
     // Any open overlay suspends the idle takeover — otherwise the app
     // flips to the showcase underneath Settings/modals and the user gets
@@ -576,8 +632,8 @@ export const App: React.FC = () => {
         if (!showcaseEnabled || overlayOpen) return;
         idleTimerRef.current = setTimeout(() => {
             setActiveTab(Tab.SHOWCASE);
-        }, IDLE_TIMEOUT);
-    }, [showcaseEnabled, overlayOpen]);
+        }, idleTimeoutMs);
+    }, [showcaseEnabled, overlayOpen, idleTimeoutMs]);
 
     useEffect(() => {
         const events = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll'];
@@ -725,6 +781,8 @@ export const App: React.FC = () => {
                     onEditAvatar={() => setIsPickerOpen(true)}
                     onChangePassword={handleChangePassword}
                     onUpdatePrefs={handleUpdatePrefs}
+                    onChangeUsername={handleChangeUsername}
+                    onDeleteAccount={handleDeleteAccount}
                     onLogout={() => {
                         setIsShareOpen(false);
                         setIsSettingsOpen(false);
