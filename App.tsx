@@ -368,16 +368,38 @@ export const App: React.FC = () => {
 
     // 7. BARCODE SCAN
     const handleScanResult = useCallback(async (barcode: string) => {
+        // Loose text match for validating search results: lowercase, strip
+        // accents and punctuation
+        const norm = (s: string) =>
+            s.toLowerCase()
+                .normalize('NFD')
+                .replace(/[̀-ͯ]/g, '')
+                .replace(/[^a-z0-9]+/g, ' ')
+                .trim();
+
         const getHighResCover = async (artist: string, title: string): Promise<string | null> => {
             try {
                 const searchTerm = encodeURIComponent(`${artist} ${title}`);
-                const url = `https://itunes.apple.com/search?term=${searchTerm}&entity=album&limit=1`;
+                const url = `https://itunes.apple.com/search?term=${searchTerm}&entity=album&limit=10`;
                 const response = await fetch(url);
                 const data = await response.json();
-                if (data.resultCount > 0) {
-                    return data.results[0].artworkUrl100.replace('100x100bb.jpg', '600x600bb.jpg');
-                }
-                return null;
+                const nArtist = norm(artist);
+                const nTitle = norm(title);
+                // iTunes fuzzy search happily returns a different artist's
+                // album as the top hit (e.g. "The Hits 2" by Prince matched
+                // "The Hits" by Jagged Edge) — only accept a result whose
+                // artist AND title actually correspond to what we asked for
+                const match = (data.results ?? []).find((r: any) => {
+                    const a = norm(r.artistName ?? '');
+                    const t = norm(r.collectionName ?? '');
+                    if (!a || !t) return false;
+                    const artistOk = a.includes(nArtist) || nArtist.includes(a);
+                    const titleOk = t.includes(nTitle) || nTitle.includes(t);
+                    return artistOk && titleOk;
+                });
+                return match
+                    ? match.artworkUrl100.replace('100x100bb.jpg', '600x600bb.jpg')
+                    : null;
             } catch (err) {
                 console.error("iTunes fetch failed:", err);
                 return null;
