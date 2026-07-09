@@ -13,17 +13,43 @@ const LoginModal: React.FC<LoginModalProps> = ({ onClose, onLogin }) => {
     const [password, setPassword] = useState('');
     const [isSignUp, setIsSignUp] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [info, setInfo] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
 
     const handleSubmit = async () => {
         setLoading(true);
         setError(null);
+        setInfo(null);
 
         if (isSignUp) {
-            // Create auth account
+            const name = username.trim();
+            if (!/^[a-zA-Z0-9_]{3,20}$/.test(name)) {
+                setError('Username must be 3–20 characters — letters, numbers, and _ only.');
+                setLoading(false);
+                return;
+            }
+
+            // Check availability BEFORE creating the auth account — a failed
+            // profile insert afterwards would strand an auth user whose email
+            // can never sign up again. (_ is an ilike wildcard, so escape it.)
+            const { data: existing } = await supabase
+                .from('vault_users')
+                .select('id')
+                .ilike('username', name.replace(/[_%]/g, '\\$&'))
+                .maybeSingle();
+            if (existing) {
+                setError('That username is taken.');
+                setLoading(false);
+                return;
+            }
+
+            // The username rides along in auth metadata so the profile can
+            // still be created on first login when email confirmation is on
+            // (there's no session to pass RLS with here in that case)
             const { data, error: signUpError } = await supabase.auth.signUp({
                 email,
                 password,
+                options: { data: { username: name } },
             });
 
             if (signUpError) {
@@ -32,19 +58,29 @@ const LoginModal: React.FC<LoginModalProps> = ({ onClose, onLogin }) => {
                 return;
             }
 
+            if (!data.session) {
+                // Email confirmation is enabled — no session yet, so the
+                // profile gets created on first login instead
+                setIsSignUp(false);
+                setInfo('Account created! Confirm your email, then log in.');
+                setLoading(false);
+                return;
+            }
+
             if (data.user) {
-                // Create a matching row in vault_users
                 const { error: profileError } = await supabase
                     .from('vault_users')
-                    .insert([{ id: data.user.id, username }]);
+                    .insert([{ id: data.user.id, username: name }]);
 
-                if (profileError) {
+                // 23505 = someone grabbed the name between check and insert;
+                // App's profile-ensure on login assigns a fallback name
+                if (profileError && profileError.code !== '23505') {
                     setError(profileError.message);
                     setLoading(false);
                     return;
                 }
 
-                onLogin({ id: data.user.id, username });
+                onLogin({ id: data.user.id, username: name });
             }
         } else {
             // Sign in
@@ -69,7 +105,9 @@ const LoginModal: React.FC<LoginModalProps> = ({ onClose, onLogin }) => {
 
                 onLogin({
                     id: data.user.id,
-                    username: profile?.username || email,
+                    // Profile may not exist yet on first login after email
+                    // confirmation — App creates it from the signup metadata
+                    username: profile?.username || data.user.user_metadata?.username || email,
                     avatar_icon: profile?.avatar_icon
                 });
             }
@@ -77,6 +115,22 @@ const LoginModal: React.FC<LoginModalProps> = ({ onClose, onLogin }) => {
 
         setLoading(false);
         onClose();
+    };
+
+    const handleForgotPassword = async () => {
+        if (!email) {
+            setError('Enter your email above first.');
+            return;
+        }
+        setError(null);
+        const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: window.location.origin,
+        });
+        if (resetError) {
+            setError(resetError.message);
+        } else {
+            setInfo('Password reset email sent — check your inbox.');
+        }
     };
 
     return (
@@ -87,6 +141,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ onClose, onLogin }) => {
                 </h2>
 
                 {error && <p className="text-red-600 mb-3 text-sm">{error}</p>}
+                {info && <p className="text-green-700 mb-3 text-sm font-semibold">{info}</p>}
 
                 {isSignUp && (
                     <input
@@ -110,8 +165,20 @@ const LoginModal: React.FC<LoginModalProps> = ({ onClose, onLogin }) => {
                     placeholder="Password"
                     value={password}
                     onChange={e => setPassword(e.target.value)}
-                    className="w-full mb-4 p-2 border rounded border-[#5e3f28] bg-white"
+                    onKeyDown={e => { if (e.key === 'Enter') handleSubmit(); }}
+                    className="w-full mb-1 p-2 border rounded border-[#5e3f28] bg-white"
                 />
+                <div className="mb-4 text-right">
+                    {!isSignUp && (
+                        <button
+                            type="button"
+                            onClick={handleForgotPassword}
+                            className="text-xs text-[#8b5e3c] underline hover:text-[#5e3f28]"
+                        >
+                            Forgot password?
+                        </button>
+                    )}
+                </div>
 
                 <div className="flex justify-end gap-2">
                     <button
@@ -132,7 +199,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ onClose, onLogin }) => {
                 <p className="text-center text-sm text-[#8b5e3c] mt-4">
                     {isSignUp ? 'Already have an account?' : "Don't have an account?"}
                     <button
-                        onClick={() => { setIsSignUp(!isSignUp); setError(null); }}
+                        onClick={() => { setIsSignUp(!isSignUp); setError(null); setInfo(null); }}
                         className="ml-1 font-bold underline"
                     >
                         {isSignUp ? 'Log In' : 'Sign Up'}

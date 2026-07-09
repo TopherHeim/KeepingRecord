@@ -22,6 +22,7 @@ import { API_BASE } from './services/apiBase';
 import BottomNav from './components/BottomNav';
 import SettingsScreen from './components/SettingsScreen';
 import ShareSheet from './components/ShareSheet';
+import ResetPasswordModal from './components/ResetPasswordModal';
 
 
 export const App: React.FC = () => {
@@ -43,6 +44,7 @@ export const App: React.FC = () => {
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [isShareOpen, setIsShareOpen] = useState(false);
     const [userEmail, setUserEmail] = useState<string | null>(null);
+    const [isResetOpen, setIsResetOpen] = useState(false);
 
     const [confirmModal, setConfirmModal] = useState<{
         isOpen: boolean;
@@ -61,6 +63,34 @@ export const App: React.FC = () => {
 
     const closeConfirm = () => setConfirmModal(prev => ({ ...prev, isOpen: false }));
 
+    // Fetch the user's profile, creating it if missing. Signups that happen
+    // with email confirmation enabled can't insert a profile row (no session
+    // yet), so the username travels in auth metadata and the row is created
+    // here on first login instead.
+    const ensureProfile = async (authUser: { id: string; email?: string; user_metadata?: any }) => {
+        const { data } = await supabase
+            .from('vault_users')
+            .select('*')
+            .eq('id', authUser.id)
+            .maybeSingle();
+        if (data) return data;
+
+        const base = String(authUser.user_metadata?.username || authUser.email?.split('@')[0] || 'collector')
+            .replace(/[^a-zA-Z0-9_]/g, '')
+            .slice(0, 20) || 'collector';
+        // Second candidate covers a username collision (unique index)
+        for (const candidate of [base, `${base.slice(0, 15)}_${Math.floor(1000 + Math.random() * 9000)}`]) {
+            const { data: created, error } = await supabase
+                .from('vault_users')
+                .insert([{ id: authUser.id, username: candidate }])
+                .select()
+                .single();
+            if (!error) return created;
+            if (error.code !== '23505') break;
+        }
+        return null;
+    };
+
     // 1. RESTORE SESSION ON PAGE LOAD
     useEffect(() => {
         const initAuth = async () => {
@@ -72,12 +102,7 @@ export const App: React.FC = () => {
                 setViewingUserId(session.user.id);
                 setUserEmail(session.user.email ?? null);
 
-                // Fetch user profile
-                const { data } = await supabase
-                    .from('vault_users')
-                    .select('*')
-                    .eq('id', session.user.id)
-                    .single();
+                const data = await ensureProfile(session.user);
                 if (data) {
                     setCurrentUser(data);
                     // Honor the "Opening tab" preference from Settings
@@ -98,13 +123,28 @@ export const App: React.FC = () => {
 
         initAuth();
 
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+            // Arriving via a password-recovery email link — prompt for the
+            // new password (the link signs the user in with a recovery session)
+            if (event === 'PASSWORD_RECOVERY') {
+                setIsResetOpen(true);
+            }
+
             if (session?.user) {
                 setUserId(session.user.id);
                 setIsLoggedIn(true);
                 setViewingUserId(session.user.id);
                 setUserEmail(session.user.email ?? null);
                 fetchRecords(session.user.id);
+                // Deferred: awaiting supabase inside onAuthStateChange deadlocks.
+                // Covers first login after email confirmation, where no profile
+                // row exists yet.
+                const authUser = session.user;
+                setTimeout(() => {
+                    ensureProfile(authUser).then(profile => {
+                        if (profile) setCurrentUser(profile);
+                    });
+                }, 0);
             } else {
                 setUserId(null);
                 setIsLoggedIn(false);
@@ -447,19 +487,9 @@ export const App: React.FC = () => {
         if (error) toast.error('Failed to save settings.');
     };
 
-    // 9c. CHANGE PASSWORD (sends a reset email)
-    const handleChangePassword = async () => {
-        if (!userEmail) {
-            toast.error('No email on file for this account.');
-            return;
-        }
-        const { error } = await supabase.auth.resetPasswordForEmail(userEmail);
-        if (error) {
-            toast.error('Could not send reset email: ' + error.message);
-        } else {
-            toast.success('Password reset email sent!');
-        }
-    };
+    // 9c. CHANGE PASSWORD — the user is already authenticated, so set it
+    // directly instead of round-tripping through a reset email
+    const handleChangePassword = () => setIsResetOpen(true);
 
     // 9d. CHANGE USERNAME — returns false on a uniqueness conflict so the
     // settings screen can show "taken" inline
@@ -625,7 +655,7 @@ export const App: React.FC = () => {
     const overlayOpen =
         isSettingsOpen || isShareOpen || isModalOpen || !!editingRecord ||
         !!playingRecord || isScannerOpen || isPickerOpen ||
-        confirmModal.isOpen || showLoginModal;
+        confirmModal.isOpen || showLoginModal || isResetOpen;
 
     const resetIdleTimer = useCallback(() => {
         if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
@@ -826,6 +856,16 @@ export const App: React.FC = () => {
                     currentSeed={currentUser?.avatar_icon || currentUser?.username || 'vinyl-fan'}
                     onClose={() => setIsPickerOpen(false)}
                     onSave={handleUpdateAvatar}
+                />
+            )}
+
+            {isResetOpen && (
+                <ResetPasswordModal
+                    onClose={() => setIsResetOpen(false)}
+                    onSuccess={() => {
+                        setIsResetOpen(false);
+                        toast.success('Password updated!');
+                    }}
                 />
             )}
 
