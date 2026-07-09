@@ -2,7 +2,7 @@
 
 A web app for cataloging and tracking a vinyl record collection — with barcode scanning, automatic cover art and metadata lookup, AI-powered recommendations, and a native iOS app.
 
-**Live site:** [https://KeepingRecord.netlify.app/](https://vinyltracker.netlify.app/)
+**Live site:** [https://vinyltracker.netlify.app/](https://vinyltracker.netlify.app/)
 
 ## Features
 
@@ -13,7 +13,8 @@ A web app for cataloging and tracking a vinyl record collection — with barcode
 - **AI recommendations** — Gemini suggests new records based on what you already own
 - **Stats** — charts breaking down your collection by genre, decade, and more
 - **Showcase mode** — an animated turntable display that kicks in when the app sits idle
-- **Explore** — browse other users' collections
+- **Friends** — search collectors by username, follow them, and compare collections head-to-head (records, genres, decades, and albums in common)
+- **Shareable collection page** — a public read-only page at `/v/<username>` that anyone can view without an account (owners can toggle it off)
 - **Shake to play** — shake your phone to get a random record from your collection
 - **PWA + iOS app** — installable as a progressive web app, or built as a native iOS app via Capacitor
 
@@ -38,6 +39,7 @@ A web app for cataloging and tracking a vinyl record collection — with barcode
 │   ├── discogs-proxy.js     #   Discogs search (keeps the API token server-side)
 │   ├── image-proxy.ts       #   CORS-safe image proxy for color extraction
 │   ├── gemini.mts           #   AI metadata & recommendations
+│   ├── delete-account.mts   #   Account deletion (needs the service-role key)
 │   └── keep-alive.mts       #   Scheduled daily ping so Supabase stays active
 ├── ios/                     # Capacitor iOS project
 └── public/                  # Static assets & PWA manifest
@@ -82,12 +84,13 @@ A web app for cataloging and tracking a vinyl record collection — with barcode
    | `VITE_DEFAULT_USER_ID` | frontend | Collection shown to logged-out visitors |
    | `DISCOGS_TOKEN` | discogs-proxy | Discogs personal access token |
    | `GEMINI_API_KEY` | gemini | Google Gemini API key |
+   | `SUPABASE_SERVICE_ROLE_KEY` | delete-account | Supabase service-role key (server-side only — never expose it with a `VITE_` prefix) |
 
 4. Deploy. The `keep-alive` scheduled function starts running daily once the site is published — check **Logs → Functions** to confirm.
 
 ## Supabase setup
 
-The app expects three tables: `albums`, `vault_users`, and `keep_alive`.
+The app expects four tables: `albums`, `vault_users`, `follows`, and `keep_alive`.
 
 ```sql
 create table public.albums (
@@ -111,7 +114,20 @@ create table public.vault_users (
   is_public boolean not null default true,        -- share-link gate
   pref_showcase boolean not null default true,    -- settings toggles
   pref_shake boolean not null default false,
-  pref_opening_tab text not null default 'TILES'
+  pref_opening_tab text not null default 'TILES',
+  pref_idle_delay integer not null default 60     -- seconds before showcase mode
+);
+
+-- usernames must be unique case-insensitively (the share page matches with ilike)
+create unique index vault_users_username_lower_key
+  on public.vault_users (lower(username));
+
+create table public.follows (
+  follower_id uuid not null references public.vault_users(id) on delete cascade,
+  followee_id uuid not null references public.vault_users(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (follower_id, followee_id),
+  check (follower_id <> followee_id)
 );
 
 create table public.keep_alive (
@@ -119,6 +135,8 @@ create table public.keep_alive (
   last_ping timestamptz default now()
 );
 ```
+
+`follows` needs RLS policies so users can only select, insert, and delete rows where `auth.uid() = follower_id`.
 
 `keep_alive` needs RLS policies allowing the `anon` role to select/insert/update the single `id = 1` row, since the scheduled function writes with the anon key.
 
@@ -140,6 +158,5 @@ The native app calls the deployed Netlify functions directly (see `services/apiB
 - Pressing details & condition grading
 - Shelf view rendering records as colored spines
 - Play history and listening stats
-- Fix header on shared collection page
 - Improve stats page to avoid overlap
 - Add additional settings and customization

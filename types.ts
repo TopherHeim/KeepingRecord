@@ -35,6 +35,7 @@ export interface User {
     pref_showcase?: boolean;
     pref_shake?: boolean;
     pref_opening_tab?: string;
+    pref_idle_delay?: number; // seconds before showcase mode kicks in
 }
 
 export interface NewAlbumInput {

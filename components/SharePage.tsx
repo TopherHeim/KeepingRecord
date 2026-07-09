@@ -114,18 +114,29 @@ const SharePage: React.FC<SharePageProps> = ({ username }) => {
 
     return (
         <div className="min-h-screen bg-[#d6cbb8]">
-            {/* Header */}
-            <header className="bg-[#8B5E3C] border-b-4 border-[#5e3f28]">
-                <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between">
-                    <a href="/" className="flex items-center gap-2.5 no-underline">
-                        <div className="w-7 h-7 bg-black rounded-full flex items-center justify-center animate-spin-slow">
-                            <div className="w-[11px] h-[11px] rounded-full bg-[#D2691E]" />
-                        </div>
-                        <span className="text-base font-black tracking-tighter text-[#FDF6E3]" style={{ textShadow: '1px 1px 0 rgba(0,0,0,0.2)' }}>
-                            Keeping<span className="text-[#D2691E]">Record</span>
-                        </span>
-                    </a>
-                    <span className="text-[10px] font-mono tracking-[0.1em] text-[#FDF6E3]/60">SHARED COLLECTION</span>
+            {/* Header — mirrors the homepage header so shared links feel like the same app */}
+            <header className="sticky top-0 z-50 bg-[#8B5E3C] text-[#FDF6E3] shadow-lg border-b-4 border-[#5e3f28]">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex items-center justify-between h-20">
+                        <a href="/" className="flex items-center gap-4 no-underline">
+                            <div className="relative">
+                                <div className="w-12 h-12 bg-black rounded-full border-2 border-[#333] flex items-center justify-center animate-spin-slow shadow-[0_4px_10px_rgba(0,0,0,0.5)] relative overflow-hidden">
+                                    <div className="absolute inset-1 rounded-full border border-white/5"></div>
+                                    <div className="absolute inset-2 rounded-full border border-white/5"></div>
+                                    <div className="absolute inset-3 rounded-full border border-white/5"></div>
+                                    <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent"></div>
+                                    <div className="w-5 h-5 rounded-full bg-[#D2691E] border border-black/30 flex items-center justify-center z-10">
+                                        <div className="w-1 h-1 bg-white/60 rounded-full shadow-[0_0_2px_rgba(0,0,0,0.8)]"></div>
+                                    </div>
+                                </div>
+                                <div className="absolute -inset-1 border-2 border-[#5e3f28]/50 rounded-full pointer-events-none"></div>
+                            </div>
+                            <h1 className="text-2xl font-black tracking-tighter text-[#FDF6E3]" style={{ textShadow: '2px 2px 0px rgba(0,0,0,0.2)' }}>
+                                Keeping<span className="text-[#D2691E]">Record</span>
+                            </h1>
+                        </a>
+                        <span className="text-[10px] font-mono tracking-[0.1em] text-[#FDF6E3]/60">SHARED COLLECTION</span>
+                    </div>
                 </div>
             </header>
 
