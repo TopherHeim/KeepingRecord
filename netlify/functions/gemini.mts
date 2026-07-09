@@ -5,6 +5,8 @@ import type { Config } from "@netlify/functions";
 // the app itself. Headers can be spoofed, but this blocks other sites
 // embedding the endpoint and casual replay abuse.
 const ALLOWED_ORIGINS = new Set([
+  "https://keepingrecord.net",
+  "https://www.keepingrecord.net",
   "https://keepingrecord.netlify.app",
   "https://vinyltracker.netlify.app",
   "capacitor://localhost",
